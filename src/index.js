@@ -79,7 +79,21 @@ app.post('/todos', checksExistsUserAccount, (request, response) => {
 });
 
 app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
-  // Complete aqui
+  
+  const curr_idx = users.indexOf(request.currentUser);
+  const todo_obj_request = users[curr_idx].todos.find((elem) => {
+
+    return request.params.id === elem.id;
+  })
+
+  const curr_idx_todo = users[curr_idx].todos.indexOf(todo_obj_request);
+
+  users[curr_idx].todos[curr_idx_todo].title = request.body.title;
+  users[curr_idx].todos[curr_idx_todo].deadline = new Date( request.body.deadline );
+  
+  request.currentUser = users[curr_idx];
+
+  return response.status(200).json( request.currentUser );
 });
 
 app.patch('/todos/:id/done', checksExistsUserAccount, (request, response) => {
