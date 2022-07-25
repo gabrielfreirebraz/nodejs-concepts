@@ -56,8 +56,26 @@ app.get('/todos', checksExistsUserAccount, (request, response) => {
   return response.status(200).json( request.currentUser.todos );
 });
 
+
 app.post('/todos', checksExistsUserAccount, (request, response) => {
-  // Complete aqui
+
+  const reqTodo = { 
+    id: uuidv4(),
+    title: request.body.title,
+    done: false, 
+    deadline: new Date(request.body.deadline), 
+    created_at: new Date()
+  }
+
+  if (!reqTodo.title) {
+    throw ("Invalid title to this request")
+  }
+
+  const current_index = users.indexOf(request.currentUser);
+  users[current_index].todos.push(reqTodo)
+  request.currentUser = users[current_index];
+
+  return response.status(200).json( request.currentUser.todos );
 });
 
 app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
