@@ -31,7 +31,7 @@ function checksExistsUserAccount(request, response, next) {
 
 
 
-
+/************* CREATE USERS ************/
 app.post('/users', (request, response) => {
 
 
@@ -42,14 +42,16 @@ app.post('/users', (request, response) => {
     todos: []
   }
 
-  users.push(myReq)
+  users.push(myReq);
 
   return response.status(200).json( users );
 });
 
 
 
- 
+
+
+ /************* GET TODOS LIST ************/
 app.get('/todos', checksExistsUserAccount, (request, response) => {
 
 
@@ -57,6 +59,9 @@ app.get('/todos', checksExistsUserAccount, (request, response) => {
 });
 
 
+
+
+ /************* CREATE NEW TODO ************/
 app.post('/todos', checksExistsUserAccount, (request, response) => {
 
   const reqTodo = { 
@@ -78,6 +83,12 @@ app.post('/todos', checksExistsUserAccount, (request, response) => {
   return response.status(200).json( request.currentUser.todos );
 });
 
+
+
+
+
+
+ /************* UPDATE TODO BY KEY ************/
 app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
   
   const curr_idx = users.indexOf(request.currentUser);
@@ -96,12 +107,58 @@ app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
   return response.status(200).json( request.currentUser );
 });
 
+
+
+
+
+
+
+ /************* UPDATE FOR TRUE IN TODO ************/
 app.patch('/todos/:id/done', checksExistsUserAccount, (request, response) => {
-  // Complete aqui
+
+
+  request.currentUser.todos.find((element, idx, arr) => {
+    if (element.id === request.params.id) {
+
+      element.done = true;  
+      
+      return true;
+    }
+
+    return false;
+  });
+
+  const idxCurrUser = users.indexOf(request.currentUser);
+  users[idxCurrUser] = request.currentUser;
+
+  // console.log(users[idxCurrUser]);
+
+  return response.status(200).json( request.currentUser );
 });
 
+
+
+
+
+ /************* DELETE TODO BY ID ************/
 app.delete('/todos/:id', checksExistsUserAccount, (request, response) => {
-  // Complete aqui
+
+  request.currentUser.todos.find((elem, idx, arr) => {
+
+    if (elem.id === request.params.id) {
+      request.currentUser.todos.splice(idx, 1);
+      return true;
+    }
+    return false;
+  });
+
+  const idxCurrUser = users.indexOf(request.currentUser);
+  users[idxCurrUser] = request.currentUser;
+
+  return response.status(200).json( request.currentUser );
 });
+
+
+
 
 module.exports = app;
