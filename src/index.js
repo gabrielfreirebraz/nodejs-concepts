@@ -77,7 +77,7 @@ app.get('/todos', checksExistsUserAccount, (request, response) => {
  /************* CREATE NEW TODO ************/
 app.post('/todos', checksExistsUserAccount, (request, response) => {
 
-  const reqTodo = { 
+  const newTodo = { 
     id: uuidv4(),
     title: request.body.title,
     done: false, 
@@ -85,15 +85,16 @@ app.post('/todos', checksExistsUserAccount, (request, response) => {
     created_at: new Date()
   }
 
-  if (!reqTodo.title) {
+  if (!newTodo.title) {
     throw ("Invalid title to this request")
   }
 
+
   const current_index = users.indexOf(request.currentUser);
-  users[current_index].todos.push(reqTodo)
+  users[current_index].todos.push(newTodo)
   request.currentUser = users[current_index];
 
-  return response.status(200).json( request.currentUser.todos );
+  return response.status(201).json( newTodo );
 });
 
 
@@ -110,6 +111,9 @@ app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
     return request.params.id === elem.id;
   })
 
+  if (!todo_obj_request) return response.status(404).json({error:'Todo not found'})
+
+
   const curr_idx_todo = users[curr_idx].todos.indexOf(todo_obj_request);
 
   users[curr_idx].todos[curr_idx_todo].title = request.body.title;
@@ -117,7 +121,9 @@ app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
   
   request.currentUser = users[curr_idx];
 
-  return response.status(200).json( request.currentUser );
+  const todoUpdated =  request.currentUser.todos[curr_idx_todo];
+
+  return response.status(201).json( todoUpdated );
 });
 
 
@@ -129,24 +135,27 @@ app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
  /************* UPDATE FOR TRUE IN TODO ************/
 app.patch('/todos/:id/done', checksExistsUserAccount, (request, response) => {
 
-
-  request.currentUser.todos.find((element, idx, arr) => {
+  const todoDone = request.currentUser.todos.find((element, idx, arr) => {
     if (element.id === request.params.id) {
 
-      element.done = true;  
-      
+      element.done = true;        
+
       return true;
     }
 
     return false;
   });
 
+  if (!todoDone) {
+    return response.status(404).json({error:"Todo not found for to make done!"})
+  }
+
   const idxCurrUser = users.indexOf(request.currentUser);
   users[idxCurrUser] = request.currentUser;
 
   // console.log(users[idxCurrUser]);
 
-  return response.status(200).json( request.currentUser );
+  return response.status(200).json( todoDone );
 });
 
 
@@ -156,7 +165,7 @@ app.patch('/todos/:id/done', checksExistsUserAccount, (request, response) => {
  /************* DELETE TODO BY ID ************/
 app.delete('/todos/:id', checksExistsUserAccount, (request, response) => {
 
-  request.currentUser.todos.find((elem, idx, arr) => {
+  const todoDeleted = request.currentUser.todos.find((elem, idx, arr) => {
 
     if (elem.id === request.params.id) {
       request.currentUser.todos.splice(idx, 1);
@@ -165,10 +174,15 @@ app.delete('/todos/:id', checksExistsUserAccount, (request, response) => {
     return false;
   });
 
+
+  if (!todoDeleted) {
+    return response.status(404).json({error: "Todo not found for deleted it!"})
+  }
+
   const idxCurrUser = users.indexOf(request.currentUser);
   users[idxCurrUser] = request.currentUser;
 
-  return response.status(200).json( request.currentUser );
+  return response.status(204).json( request.currentUser );
 });
 
 
