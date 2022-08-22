@@ -35,6 +35,19 @@ function checksExistsUserAccount(request, response, next) {
 app.post('/users', (request, response) => {
 
 
+
+  const isUserExists = users.find( (elem, idx, arr) => {
+
+    return (request.body.username === elem.username);
+  });
+
+  if (!!isUserExists) {
+
+    return response.status(400).json( {error: "This user already exists! Please try again..."} );
+  }
+
+
+
   let myReq = {
     id: uuidv4(),
     name: request.body.name,
@@ -44,7 +57,7 @@ app.post('/users', (request, response) => {
 
   users.push(myReq);
 
-  return response.status(200).json( users );
+  return response.status(201).json( myReq );
 });
 
 
